@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../static/css/index_style.css"   th:href="@{/css/index_style.css}" />
+</head>
+<body>
+
+<!-- 页面头部区域 -->
+<div id="head_content">
+    <div class="head_logo">
+        <img src="../static/img/baidu_logo.png" th:src="@{/img/baidu_logo.png}" height="25"/>
+    </div>
+    <div class="sub_title">
+        新型冠状病毒肺炎
+    </div>
+    <div class="title">
+        <h1>疫情实时大数据报告</h1>
+    </div>
+    <div class="readnum">
+        共 <span th:text="${visit_num}">100000</span>人次已浏览
+    </div>
+</div>
+
+<!-- 页面主体区域 -->
+<div id="body_content">
+    <!-- lab页 -->
+    <div id="yiqing_lab">
+        <div id="yiqing_in">
+            <span  class="active">国内疫情</span>
+        </div>
+        <div id="yinqing_out">
+            <span>国外疫情</span>
+        </div>
+    </div>
+
+    <!-- 国内疫情数据展示 -->
+    <div id="yiqing_data_block">
+        <div class="title">
+            <h4>国内疫情</h4>
+            <span>数据更新至 2020.11.26 14:26</span>
+        </div>
+        <div id="box" class="content">
+            <div class="info_block">
+                <span class="lab">登记人数</span>
+                <span class="current_num" th:text="${epidamic_data.get('sum_confirm')}">9999</span>
+                <span class="yestoday_num">昨日<span class="data" >+66</span></span>
+            </div>
+            <div class="info_block">
+                <span class="lab">累计确诊</span>
+                <span class="current_num" th:text="${epidamic_data.get('sum_confirm')}">999</span>
+                <span class="yestoday_num">昨日<span class="data" th:text="${epidamic_data.get('sum_nowConfirm')}">+66</span></span>
+            </div>
+            <div class="info_block">
+                <span class="lab">无症状</span>
+                <span class="current_num"th:text="${epidamic_data.get('sum_confirm')}">9999</span>
+                <span class="yestoday_num">昨日<span class="data">+66</span></span>
+            </div>
+            <div class="info_block">
+                <span class="lab">有症状</span>
+                <span class="current_num">999</span>
+                <span class="yestoday_num">昨日<span class="data">+66</span></span>
+            </div>
+            <div class="info_block">
+                <span class="lab">疑似病例</span>
+                <span class="current_num">832</span>
+                <span class="yestoday_num">昨日<span class="data">+66</span></span>
+            </div>
+            <div class="info_block">
+                <span class="lab" >已治愈</span>
+                <span class="current_num"  th:text="${epidamic_data.get('sum_heal')}">832</span>
+                <span class="yestoday_num">昨日<span class="data">+66</span></span>
+            </div>
+            <div class="info_block">
+                <span class="lab">重症病例</span>
+                <span class="current_num">832</span>
+                <span class="yestoday_num">昨日<span class="data">+66</span></span>
+            </div>
+            <div class="info_block">
+                <span class="lab">死亡病例</span>
+                <span class="current_num" th:text="${epidamic_data.get('sum_dead')}">832</span>
+                <span class="yestoday_num">昨日<span class="data" >+66</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 地图区域 -->
+    <div id="map_block">
+        <!-- lab切换区 -->
+        <div class="title">
+            <div id="lab_left" class="lab_left active" onclick="nowConfirm()">
+                现有确诊
+            </div>
+            <div id="lab_right" class="lab_right" onclick="CumulativeConfirm()">
+                累计确诊
+            </div>
+        </div>
+        <!-- 地图区域 -->
+        <div id="main" class="content">
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="../static/js/echarts.js"  th:src="@{/js/echarts.js}" ></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+<script type="text/javascript" src="../static/js/index_js.js" th:src="@{/js/index_js.js}"></script>
+<script>
+
+
+
+
+    //去服务器取数据
+    $.ajax({
+        type:"GET",
+        url:"http://localhost:8080/provinceofchina/CumulativeConfirm",
+        dataType:"JSON",
+        success: function (res){
+
+            map(res.data)
+        }
+    })
+
+    function CumulativeConfirm() {
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8080/provinceofchina/map",
+            dataType: "JSON",
+            success: function (res) {
+
+                map(res.data)
+            }
+        })
+    }
+
+    function nowConfirm(){
+        $.ajax({
+            type:"GET",
+            url:"http://localhost:8080/provinceofchina/CumulativeConfirm",
+            dataType:"JSON",
+            success: function (res){
+
+                map(res.data)
+            }
+        })
+    }
+
+    function map(map_data){
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById("main"));
+        var option = {
+            title: {
+                //标题样式
+                text: "国内疫情分布图",
+                x: "center",
+                textStyle: {
+                    fontSize: 18,
+                    color: "black",
+                },
+            },
+            tooltip: {
+                trigger: "item",
+                formatter: "{b}<br/>{c} (病例)",
+            },
+            visualMap:[{
+                type:'piecewise',
+                pieces:[
+                    {min:1000, label:'>=1000',color:'#E64546'},
+                    {min:100, max:999 , label:'100-999',color:'#F57567'},
+                    {min:10, max:99 , label:'10-99',color:'#FF9985'},
+                    {min:1, max:9 , label:'1-9',color:'#FFE5DB'},
+                ]
+            }],
+            series: [
+                {
+                    name: "疫情数据",
+                    type: "map",
+                    mapType: "china",
+                    roam: false, //是否开启鼠标缩放和平移漫游
+                    itemStyle: {
+                        //地图区域的多边形 图形样式
+                        normal: {
+                            //是图形在默认状态下的样式
+                            label: {
+                                show: true, //是否显示标签
+                                textStyle: {
+                                    color: "black",
+                                },
+                            },
+                        },
+                        zoom: 1.5, //地图缩放比例,默认为1
+                        emphasis: {
+                            //是图形在高亮状态下的样式,比如在鼠标悬浮或者图例联动高亮时
+                            label: { show: true },
+                        },
+                    },
+                    top: "3%", //组件距离容器的距离
+                    data: map_data,
+                },
+            ],
+        };
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+
+    }
+
+
+
+</script>
+</body>
+</html>
+

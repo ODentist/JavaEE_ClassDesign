@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+nm$l
+<div>
+    共
+    <span th:text="${count_ip}"></span>
+</div>
+<div class="epidamic-data"></div>
+</body>
+</html>
+<script src="../static/js/jquery-3.2.1.min.js" th:src="@{/js/jquery-2.1.1min.js}"></script>
+<script>
+    $.ajax({
+        type:"GET",
+        url:"http://localhost:8080/provinceofchina/map",
+        dataType:"json",
+        contentType:"application/json",
+        success:function (res) {
+            console.log(res)
+
+        }
+    })
+
+</script>
